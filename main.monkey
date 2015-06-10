@@ -1,34 +1,42 @@
-Import mojo
+Import player
 
 Class konApp Extends App
 
 	Field	m_keyHits:Int[10]
+
 	Field	m_updateCount:Int 			= 0
 	Field	m_letterCount:Int 			= 0
 	Field	m_refreshStep:Int			= 5
-	Field	m_imageToDisplay:Image
+
+	Field	m_gravity:float				= 0.2
+
+	Field	m_konamiImage:Image
+	Field	m_konamiSound:Sound
+
 	Field	m_achievementUnlocked:Bool 	= false
+
+	Field	m_player:Player 			= New Player(KEY_LEFT, KEY_RIGHT, 320, 50)
 	
 	'@desc Function used to draw waves on the background
 	'@author Q.Sixt (based on MonkeyX tutorials)
-	Function DrawSpiral:void( clock )
-		Local w=DeviceWidth/2
+	Function DrawSpiral:void( _clock )
+		Local w = DeviceWidth / 2
 		For Local i#=0 Until w*1.5 Step .2
 			Local x#,y#
-			x=w+i*Tan(i*3+clock)
-			y=w+i*Cos(i*2+clock)
+			x = w + i * Sin( i * 3 + _clock )
+			y = w + i * Cos( i * 2 + _clock )
 			DrawPoint x,y
 		Next
 	End
 
 	'@desc used do draw Konami Code
-	Method drawKonami:void( clock )
-		Local l_widthCenter 	= DeviceWidth/2
-		Local l_heightCenter	= DeviceHeight/2
-		Local x, y
+	'@author Q.Sixt
+	method drawKonami:void( _clock )
+		Local l_widthCenter:Int 	= DeviceWidth / 2
+		Local l_heightCenter:Int	= DeviceHeight / 2
+		Local l_delta:Int 			= Rnd (0, _clock) / 40
 
-
-		DrawImage m_imageToDisplay, l_widthCenter - , l_heightCenter
+		DrawImage m_konamiImage, l_delta, l_delta
 	End
 	
 	'@Desc Used to display the Konami achievement on the screen just after it's been unlocked
@@ -41,7 +49,7 @@ Class konApp Extends App
 	'@author Q.Sixt
 	Method updateKeyHit:void()
 		Repeat
-			Local l_char=GetChar()
+			Local l_char = GetChar()
 			If Not l_char
 				Exit
 			Endif
@@ -64,7 +72,9 @@ Class konApp Extends App
 					m_keyHits[9] = 97 )
 						Print "Konami achieved !"
 						displayKonamiAchievement()
-						m_imageToDisplay = LoadImage( "Achievement.png" )
+						m_konamiImage 	= LoadImage( "Achievement.png" )
+						m_konamiSound	= LoadSound( "Konami.wav")
+						PlaySound( m_konamiSound )
 				Else
 					Print "Konami raté"
 				Endif
@@ -98,6 +108,7 @@ Class konApp Extends App
 	
 	Method OnUpdate()
 		updateKeyHit()
+		m_player.Update( m_gravity )
 	End
 	
 	Method OnRender()
@@ -107,6 +118,7 @@ Class konApp Extends App
 		If( m_achievementUnlocked )
 			drawKonami( m_updateCount )
 		Endif
+		m_player.Draw()
 	End
 	
 End
