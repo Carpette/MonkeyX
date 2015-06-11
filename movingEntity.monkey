@@ -36,4 +36,29 @@ Class MovingEntity
 		return self.m_size
 	End
 
+	Method GetPosX:Float()
+		return Self.m_position.x
+	End
+
+	Method GetPosY:Float()
+		return Self.m_position.y
+	End
+
+	'GetMinPosX and GetMaxPosX return the value on the position of the moving object taking in account the size of the object
+	Method GetMinPosX:float()
+		return Self.m_position.x - (Self.m_size / 2)
+	End
+
+	Method GetMaxPosX:float()
+		return Self.m_position.x + (Self.m_size / 2)
+	End
+
+	Method GetMinPosY:float()
+		return Self.m_position.y - (Self.m_size / 2)
+	End
+
+	Method GetMaxPosY:float()
+		return Self.m_position.y + (Self.m_size / 2)
+	End
+
 End

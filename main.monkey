@@ -149,6 +149,52 @@ Class konApp Extends App
 
 	'@desc return true if player is in a collision against any bullet
 	Method IsPlayerColliding:Bool()
+		local i:Int = 0
+		Local l_PlayerMinPosY	= Self.m_player.GetMinPosY()
+		Local l_PlayerMinPosX	= Self.m_player.GetMinPosX()
+		Local l_PlayerMaxPosY	= Self.m_player.GetMaxPosY()
+		Local l_PlayerMaxPosX	= Self.m_player.GetMaxPosX()
+
+		Print "l_PlayerMinPosY: " + l_PlayerMinPosY
+		Print "l_PlayerMinPosX: " + l_PlayerMinPosX
+		Print "l_PlayerMaxPosY: " + l_PlayerMaxPosY
+		Print "l_PlayerMaxPosX: " + l_PlayerMaxPosX
+
+		'For each bullet
+		While i < Self.m_step
+
+			Local l_isCollidingOnX	= false
+			Local l_isCollidingOnY	= false
+			Local l_minPos = Self.m_bullets[i].GetMinPosX()
+			Local l_maxPos = Self.m_bullets[i].GetMaxPosX()
+			
+			'If the position of the Bullet is beetween the min and max of the player, then, collision
+			If ((l_PlayerMinPosX < l_maxPos and l_PlayerMinPosX > l_minPos) or
+				(l_PlayerMaxPosX < l_maxPos and l_PlayerMaxPosX > l_minPos) or
+				(l_PlayerMinPosX < l_maxPos and l_PlayerMaxPosX > l_maxPos) or
+				(l_PlayerMinPosX < l_minPos and l_PlayerMaxPosX > l_minPos))
+				'Ok, if we're here, that means the X position is colliding. Let's check the Y position
+				Print "Colliding X for i: " + i
+				l_isCollidingOnX = true
+			End
+			l_minPos = Self.m_bullets[i].GetMinPosY()
+			l_maxPos = Self.m_bullets[i].GetMaxPosY()
+
+			If ((l_PlayerMinPosY < l_maxPos and l_PlayerMinPosY > l_minPos) or
+				(l_PlayerMaxPosY < l_maxPos and l_PlayerMaxPosY > l_minPos) or
+				(l_PlayerMinPosY < l_maxPos and l_PlayerMaxPosY > l_maxPos) or
+				(l_PlayerMinPosY < l_minPos and l_PlayerMaxPosY > l_minPos))
+				l_isCollidingOnY = true
+			End
+
+			If l_isCollidingOnY And l_isCollidingOnX
+				return True
+			End
+
+			i += 1
+			Print "-----------------------"
+		Wend
+		Print "_____________________________________________________"
 		return false
 	End
 	
@@ -180,9 +226,17 @@ Class konApp Extends App
 				'Let's see now if the player is colliding against a bullet. If so, that's the end
 				If IsPlayerColliding()
 					self.m_gameState = 2
+					While i < Self.m_step
+						Self.m_bullets[i] = null
+					Wend
+					Self.m_step = 1
+
 				End
 
 			Case STATE_DEATH
+				If KeyHit(KEY_ENTER)
+					self.m_gameState = STATE_MENU
+				End
 		End
 	End
 	
