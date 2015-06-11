@@ -36,7 +36,6 @@ Class Player Extends MovingEntity
 			self.m_velocity.x	= self.m_speed
 		End
 		If KeyDown( self.m_upKey ) and self.m_position.y = 464.0
-			Print("m_position.y: " + self.m_position.y + " deviceHeight: " + DeviceHeight)
 			self.m_velocity.y	= -m_speed *2
 		End
 

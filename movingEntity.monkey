@@ -32,4 +32,8 @@ Class MovingEntity
 		self.m_velocity.y = _velocity
 	End
 
+	Method GetSize:int ()
+		return self.m_size
+	End
+
 End

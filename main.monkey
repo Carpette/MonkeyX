@@ -5,6 +5,12 @@ Import menu
 
 Class konApp Extends App
 
+	Const STATE_MENU:Int 	= 0
+	Const STATE_GAME:Int 	= 1
+	Const STATE_DEATH:Int	= 2
+
+	Field	m_gameState		= 0
+
 	Field	m_keyHits:Int[10]
 
 	Field	m_updateCount:Int 			= 0
@@ -108,9 +114,10 @@ Class konApp Extends App
 		Self.m_updateCount+=1
 	End
 
+	'@desc Method used to create new bullets. _first parameter should only be used if it's the first bullet ever generated in the game (to generate it on the ground)
 	Method CreateNewBullet( _speed:Int, _first:bool = false )
 		Local l_RndLeftRight:float	= Rnd()
-		Local l_RndHeight:float		= Rnd(80)
+		Local l_RndHeight:float		= Rnd(240)
 		Local l_xStartPosition:Int	= 0
 		Local l_yStartPosition:Int	= 0
 		Local l_velocity:Int		= 0
@@ -118,17 +125,17 @@ Class konApp Extends App
 
 		'If it's the first bullet we're generating, we force it to be on the ground
 		If _first
-			l_RndHeight = 0
+			l_RndHeight = 0 + self.m_player.GetSize()
 		End
 
 		'If the bullet appears the others side of the screen, we reverse the speed (so it can go backwards)
 		If l_RndLeftRight > 0.5
-			l_xStartPosition = 480
+			l_xStartPosition = DeviceWidth() - 1
 			l_speed = -l_speed
 		End
 
 		l_yStartPosition 	= 480 - l_RndHeight
-		l_velocity			=  _speed * 2
+		l_velocity			=  l_speed * 2
 
 		Self.m_bullets[_speed - 1]	= New Bullet(KEY_LEFT, KEY_RIGHT, l_xStartPosition, l_yStartPosition, l_velocity)
 	End
@@ -139,43 +146,70 @@ Class konApp Extends App
 		Self.m_step = 1
 		CreateNewBullet( Self.m_step, true )
 	End
+
+	'@desc return true if player is in a collision against any bullet
+	Method IsPlayerColliding:Bool()
+		return false
+	End
 	
 	Method OnUpdate()
+
 		UpdateKeyHit()
-		Self.m_player.Update( Self.m_gravity )
-		Self.m_menu.Update()
+		
+		Select self.m_gameState
+			Case STATE_MENU
+				If KeyHit(KEY_ENTER)
+					self.m_gameState = STATE_GAME
+				End
+				Self.m_menu.Update()
+			Case STATE_GAME
+				Self.m_player.Update( Self.m_gravity )
 
-		'we step-up every 8 seconds
-		If (Millisecs / 1000) > self.m_step * 8
-			Self.m_step += 1
-			CreateNewBullet(Self.m_step)
+				'we step-up every 8 seconds
+				If (Millisecs / 1000) > self.m_step * 8 and m_step < 10
+					Self.m_step += 1
+					CreateNewBullet(Self.m_step)
+				End
+
+				local i:Int = 0
+				While i < Self.m_step
+					Self.m_bullets[i].Update(0.0)
+					i += 1
+				Wend
+
+				'Let's see now if the player is colliding against a bullet. If so, that's the end
+				If IsPlayerColliding()
+					self.m_gameState = 2
+				End
+
+			Case STATE_DEATH
 		End
-
-		local i:Int = 0
-		While i < Self.m_step
-			Self.m_bullets[i].Update(0.0)
-
-			i += 1
-		Wend
-
 	End
 	
 	Method OnRender()
 		Cls
-		DrawSpiral Self.m_updateCount
-		DrawSpiral Self.m_updateCount*1.1
+		Select Self.m_gameState
+
+			Case STATE_MENU
+				DrawSpiral Self.m_updateCount
+				DrawSpiral Self.m_updateCount*1.1
+				Self.m_menu.Draw()
+
+			Case STATE_GAME
+				Self.m_player.Draw()
+				local i:Int = 0
+				While i < Self.m_step
+
+					Self.m_bullets[i].Draw()
+					i += 1
+				Wend
+			Case STATE_DEATH
+
+		End
+		'We display the konami, no matter the actual state
 		If( Self.m_achievementUnlocked )
 			DrawKonami( Self.m_updateCount )
 		Endif
-		Self.m_player.Draw()
-		Self.m_menu.Draw()
-		local i:Int = 0
-		While i < Self.m_step
-
-			Self.m_bullets[i].Draw()
-			i += 1
-		Wend
-		
 	End
 	
 End
