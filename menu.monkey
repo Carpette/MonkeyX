@@ -14,8 +14,8 @@ Class Menu
 
 	Method New( _name:String = "Menu", x:Int = 0, y:Int = 0, _width:Int = 200, _height:Int = 50 )
 		SetName( _name )
-		SetPosition( x, y )
-		SetSize( _width, _height )
+		m_position 	= new Vec2Di( x, y )
+		m_size 		= new Vec2Di( _width, _height )
 	End
 
 	Method SetName( _name:String )
@@ -24,6 +24,18 @@ Class Menu
 
 	Method SetPosition( x:int, y:int )
 		Self.m_position.Set( x, y )
+	End
+
+	Method SetSize( x:int, y:int )
+		Self.m_size.Set( x, y )
+	End
+
+	Method Update()
+
+	End
+
+	Method Draw()
+
 	End
 
 End

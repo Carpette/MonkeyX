@@ -1,46 +1,13 @@
 Import mojo
-<<<<<<< HEAD
-
-Class Vec2D
-	Field x:Float
-	Field y:Float
-
-	Method New(x:Float = 0, y:Float = 0)
-		Set(x, y)
-	End
-
-	Method Set(x:Float, y:Float)
-		Self.x = x
-		Self.y = y
-	End
-End
-
-Class Vec2Di
-	Field x:Int
-	Field y:Int
-
-	Method New(x:Int = 0, y:Int = 0)
-		Set(x, y)
-	End
-
-	Method Set(x:Int, y:Int)
-		Self.x = x
-		Self.y = y
-	End
-End
-=======
 Import utils
+Import movingEntity
 
->>>>>>> no message
-
-Class Player
-	Field m_originalPos:Vec2D
-	Field m_position:Vec2D
-	Field m_velocity:Vec2D
+Class Player Extends MovingEntity
 	
 	Field m_speed:Float	= 4.0
 	Field m_leftKey:Int
-	Field m_rightkey:Int
+	Field m_rightKey:Int
+	Field m_upKey:Int
 
 	Method New(_leftKey:Int, _rightKey:Int, x:float, y:float)
 		m_originalPos 	= new Vec2D(x, y)
@@ -48,7 +15,8 @@ Class Player
 		m_velocity		= new Vec2D(x, y)
 
 		Self.m_leftKey 	= _leftKey
-		Self.m_rightkey	= _rightKey
+		Self.m_rightKey	= _rightKey
+		Self.m_upKey	= KEY_UP
 	End
 
 	Method Reset()
@@ -60,15 +28,30 @@ Class Player
 		m_velocity.x = 0
 		m_velocity.y += _gravity
 
-		if KeyDown( m_leftKey )
+		If KeyDown( m_leftKey )
 			m_velocity.x = -m_speed
 		End
-		if KeyDown( m_rightkey )
+		If KeyDown( m_rightKey )
 			m_velocity.x	= m_speed
 		End
+		If KeyDown( m_upKey ) and m_position.y = 464.0
+			Print("m_position.y: " + m_position.y + " deviceHeight: " + DeviceHeight)
+			m_velocity.y	= -m_speed *2
+		End
 
+		'We put the new position on x/y, then, we cap this position to the screen limit (with a left/right alternance only)
 		m_position.x += m_velocity.x
+		If m_position.x < ( 16 )
+			m_position.x = DeviceWidth - 16
+		End
+		If m_position.x > ( DeviceWidth - 16 )
+			m_position.x = 16
+		End
+
 		m_position.y += m_velocity.y
+		If m_position.y > ( DeviceHeight - 16 )
+			m_position.y = DeviceHeight - 16
+		End
 	End
 
 	Method Draw()

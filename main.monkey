@@ -1,4 +1,7 @@
+import movingEntity
 Import player
+Import bullet
+Import menu
 
 Class konApp Extends App
 
@@ -15,7 +18,8 @@ Class konApp Extends App
 
 	Field	m_achievementUnlocked:Bool 	= false
 
-	Field	m_player:Player 			= New Player(KEY_LEFT, KEY_RIGHT, 320, 50)
+	Field	m_player:Player 			= New Player(KEY_LEFT, KEY_RIGHT, 320, 320)
+	Field	m_menu:Menu					= new Menu()
 	
 	'@desc Function used to draw waves on the background
 	'@author Q.Sixt (based on MonkeyX tutorials)
@@ -31,7 +35,7 @@ Class konApp Extends App
 
 	'@desc used do draw Konami Code
 	'@author Q.Sixt
-	method drawKonami:void( _clock )
+	method DrawKonami:void( _clock )
 		Local l_widthCenter:Int 	= DeviceWidth / 2
 		Local l_heightCenter:Int	= DeviceHeight / 2
 		Local l_delta:Int 			= Rnd (0, _clock) / 40
@@ -71,7 +75,7 @@ Class konApp Extends App
 					Self.m_keyHits[8] = 98 And
 					Self.m_keyHits[9] = 97 )
 						Print "Konami achieved !"
-						displayKonamiAchievement()
+						DisplayKonamiAchievement()
 						m_konamiImage 	= LoadImage( "Achievement.png" )
 						m_konamiSound	= LoadSound( "Konami.wav")
 						PlaySound( m_konamiSound )
@@ -104,22 +108,24 @@ Class konApp Extends App
 
 	Method OnCreate()
 		SetUpdateRate 60
+		m_menu = New Menu("Test 1")
 	End
 	
 	Method OnUpdate()
 		UpdateKeyHit()
 		Self.m_player.Update( Self.m_gravity )
-		m_player.Update( m_gravity )
+		m_menu.Update()
 	End
 	
 	Method OnRender()
 		Cls
-		drawSpiral Self.m_updateCount
-		drawSpiral Self.m_updateCount*1.1
+		DrawSpiral Self.m_updateCount
+		DrawSpiral Self.m_updateCount*1.1
 		If( Self.m_achievementUnlocked )
 			DrawKonami( Self.m_updateCount )
 		Endif
 		m_player.Draw()
+		m_menu.Draw()
 	End
 	
 End

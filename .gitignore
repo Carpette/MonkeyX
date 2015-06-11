@@ -1,1 +1,4 @@
 *.build
+*.au
+*.aup
+*.sublime*
