@@ -10,6 +10,7 @@ Class konApp Extends App
 	Field	m_updateCount:Int 			= 0
 	Field	m_letterCount:Int 			= 0
 	Field	m_refreshStep:Int			= 5
+	Field	m_step:Int					= 0
 
 	Field	m_gravity:float				= 0.2
 
@@ -19,6 +20,7 @@ Class konApp Extends App
 	Field	m_achievementUnlocked:Bool 	= false
 
 	Field	m_player:Player 			= New Player(KEY_LEFT, KEY_RIGHT, 320, 320)
+	Field	m_bullets:Bullet[10]
 	Field	m_menu:Menu					= new Menu()
 	
 	'@desc Function used to draw waves on the background
@@ -40,7 +42,7 @@ Class konApp Extends App
 		Local l_heightCenter:Int	= DeviceHeight / 2
 		Local l_delta:Int 			= Rnd (0, _clock) / 40
 
-		DrawImage m_konamiImage, l_delta, l_delta
+		DrawImage self.m_konamiImage, l_delta, l_delta
 	End
 	
 	'@Desc Used to display the Konami achievement on the screen just after it's been unlocked
@@ -74,13 +76,13 @@ Class konApp Extends App
 					Self.m_keyHits[7] = 65575 And
 					Self.m_keyHits[8] = 98 And
 					Self.m_keyHits[9] = 97 )
-						Print "Konami achieved !"
+			
 						DisplayKonamiAchievement()
 						m_konamiImage 	= LoadImage( "Achievement.png" )
 						m_konamiSound	= LoadSound( "Konami.wav")
-						PlaySound( m_konamiSound )
+						PlaySound( self.m_konamiSound )
 				Else
-					Print "Konami raté"
+		
 				Endif
 			End
 		Forever
@@ -106,15 +108,56 @@ Class konApp Extends App
 		Self.m_updateCount+=1
 	End
 
+	Method CreateNewBullet( _speed:Int, _first:bool = false )
+		Local l_RndLeftRight:float	= Rnd()
+		Local l_RndHeight:float		= Rnd(80)
+		Local l_xStartPosition:Int	= 0
+		Local l_yStartPosition:Int	= 0
+		Local l_velocity:Int		= 0
+		Local l_speed: Int			= _speed
+
+		'If it's the first bullet we're generating, we force it to be on the ground
+		If _first
+			l_RndHeight = 0
+		End
+
+		'If the bullet appears the others side of the screen, we reverse the speed (so it can go backwards)
+		If l_RndLeftRight > 0.5
+			l_xStartPosition = 480
+			l_speed = -l_speed
+		End
+
+		l_yStartPosition 	= 480 - l_RndHeight
+		l_velocity			=  _speed * 2
+
+		Self.m_bullets[_speed - 1]	= New Bullet(KEY_LEFT, KEY_RIGHT, l_xStartPosition, l_yStartPosition, l_velocity)
+	End
+
 	Method OnCreate()
 		SetUpdateRate 60
-		m_menu = New Menu("Test 1")
+		Self.m_menu = New Menu("Test 1")
+		Self.m_step = 1
+		CreateNewBullet( Self.m_step, true )
 	End
 	
 	Method OnUpdate()
 		UpdateKeyHit()
 		Self.m_player.Update( Self.m_gravity )
-		m_menu.Update()
+		Self.m_menu.Update()
+
+		'we step-up every 8 seconds
+		If (Millisecs / 1000) > self.m_step * 8
+			Self.m_step += 1
+			CreateNewBullet(Self.m_step)
+		End
+
+		local i:Int = 0
+		While i < Self.m_step
+			Self.m_bullets[i].Update(0.0)
+
+			i += 1
+		Wend
+
 	End
 	
 	Method OnRender()
@@ -124,8 +167,15 @@ Class konApp Extends App
 		If( Self.m_achievementUnlocked )
 			DrawKonami( Self.m_updateCount )
 		Endif
-		m_player.Draw()
-		m_menu.Draw()
+		Self.m_player.Draw()
+		Self.m_menu.Draw()
+		local i:Int = 0
+		While i < Self.m_step
+
+			Self.m_bullets[i].Draw()
+			i += 1
+		Wend
+		
 	End
 	
 End

@@ -7,9 +7,11 @@ Class MovingEntity
 	Field m_position:Vec2D
 	Field m_velocity:Vec2D
 
+	Field m_size:Int
+
 	Method New(x:float, y:float)
 		self.m_originalPos 	= new Vec2D(x, y)
-		self.m_position 		= new Vec2D(x, y)
+		self.m_position 	= new Vec2D(x, y)
 		self.m_velocity		= new Vec2D(x, y)
 	End
 
