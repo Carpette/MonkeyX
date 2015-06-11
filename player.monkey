@@ -1,4 +1,5 @@
 Import mojo
+<<<<<<< HEAD
 
 Class Vec2D
 	Field x:Float
@@ -27,6 +28,10 @@ Class Vec2Di
 		Self.y = y
 	End
 End
+=======
+Import utils
+
+>>>>>>> no message
 
 Class Player
 	Field m_originalPos:Vec2D

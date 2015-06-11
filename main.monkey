@@ -41,35 +41,35 @@ Class konApp Extends App
 	
 	'@Desc Used to display the Konami achievement on the screen just after it's been unlocked
 	'@author Q.Sixt
-	Method displayKonamiAchievement:void()
-		m_achievementUnlocked = true
+	Method DisplayKonamiAchievement:void()
+		Self.m_achievementUnlocked = true
 	End
 	
 	'@Desc Updating the keyHits and calling appropriates methods, depending the situation
 	'@author Q.Sixt
-	Method updateKeyHit:void()
+	Method UpdateKeyHit:void()
 		Repeat
 			Local l_char = GetChar()
 			If Not l_char
 				Exit
 			Endif
-			If m_letterCount < 10
-				m_keyHits[m_letterCount] = l_char
+			If Self.m_letterCount < 10
+				Self.m_keyHits[Self.m_letterCount] = l_char
 			Endif
-			m_letterCount += 1
+			Self.m_letterCount += 1
 			
 			'If 10 letters have been put in the array, we can check for Konami
-			If m_letterCount = 10
-				If( m_keyHits[0] = 65574 And
-					m_keyHits[1] = 65574 And
-					m_keyHits[2] = 65576 And
-					m_keyHits[3] = 65576 And
-					m_keyHits[4] = 65573 And
-					m_keyHits[5] = 65575 And
-					m_keyHits[6] = 65573 And
-					m_keyHits[7] = 65575 And
-					m_keyHits[8] = 98 And
-					m_keyHits[9] = 97 )
+			If Self.m_letterCount = 10
+				If( Self.m_keyHits[0] = 65574 And
+					Self.m_keyHits[1] = 65574 And
+					Self.m_keyHits[2] = 65576 And
+					Self.m_keyHits[3] = 65576 And
+					Self.m_keyHits[4] = 65573 And
+					Self.m_keyHits[5] = 65575 And
+					Self.m_keyHits[6] = 65573 And
+					Self.m_keyHits[7] = 65575 And
+					Self.m_keyHits[8] = 98 And
+					Self.m_keyHits[9] = 97 )
 						Print "Konami achieved !"
 						displayKonamiAchievement()
 						m_konamiImage 	= LoadImage( "Achievement.png" )
@@ -85,8 +85,8 @@ Class konApp Extends App
 		Local l_upHit = KeyHit( KEY_UP )
 		If l_upHit
 			'We don't need to have more than 60 FPS on this demo
-			If( UpdateRate + m_refreshStep < 65)
-				SetUpdateRate UpdateRate + m_refreshStep
+			If( UpdateRate + Self.m_refreshStep < 65)
+				SetUpdateRate UpdateRate + Self.m_refreshStep
 			End
 		End
 		
@@ -94,12 +94,12 @@ Class konApp Extends App
 		Local l_downHit = KeyHit( KEY_DOWN )
 		If l_downHit
 			'Let's not slow down too much. Engine seems to crash if we reach 0
-			If( UpdateRate - m_refreshStep > 0)
-				SetUpdateRate UpdateRate - m_refreshStep
+			If( UpdateRate - Self.m_refreshStep > 0)
+				SetUpdateRate UpdateRate - Self.m_refreshStep
 			End
 		End
 		
-		m_updateCount+=1
+		Self.m_updateCount+=1
 	End
 
 	Method OnCreate()
@@ -107,16 +107,17 @@ Class konApp Extends App
 	End
 	
 	Method OnUpdate()
-		updateKeyHit()
+		UpdateKeyHit()
+		Self.m_player.Update( Self.m_gravity )
 		m_player.Update( m_gravity )
 	End
 	
 	Method OnRender()
 		Cls
-		DrawSpiral m_updateCount
-		DrawSpiral m_updateCount*1.1
-		If( m_achievementUnlocked )
-			drawKonami( m_updateCount )
+		drawSpiral Self.m_updateCount
+		drawSpiral Self.m_updateCount*1.1
+		If( Self.m_achievementUnlocked )
+			DrawKonami( Self.m_updateCount )
 		Endif
 		m_player.Draw()
 	End
