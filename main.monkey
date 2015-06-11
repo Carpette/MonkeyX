@@ -141,7 +141,7 @@ Class konApp Extends App
 	End
 
 	Method OnCreate()
-		SetUpdateRate 60
+		SetUpdateRate 30
 		Self.m_menu = New Menu("Test 1")
 		Self.m_step = 1
 		CreateNewBullet( Self.m_step, true )
@@ -225,12 +225,14 @@ Class konApp Extends App
 
 				'Let's see now if the player is colliding against a bullet. If so, that's the end
 				If IsPlayerColliding()
+					i = 0
 					self.m_gameState = 2
 					While i < Self.m_step
-						Self.m_bullets[i] = null
+						Print "i: " + i + " step: " + m_step
+						'Self.m_bullets[i] =  @TODO: détruire les balles présentes
+						i += 1
 					Wend
 					Self.m_step = 1
-
 				End
 
 			Case STATE_DEATH
