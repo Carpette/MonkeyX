@@ -28,6 +28,8 @@ Class konApp Extends App
 	Field	m_step:Int					= 0
 	'Registering the time in millisec when the player starts his game
 	Field	m_startTime:Int				= 0
+	'Registering the time in millisec when the player stop playing because of a lvlup
+	Field	m_stopTime:Int				= 0
 	'Well ... obviously, the game score
 	Field	m_score:Int					= 0
 	'Determining the actual game lvl (used to move on in the game)'
@@ -216,11 +218,12 @@ Class konApp Extends App
 		Select m_gameState
 			Case STATE_MENU
 				If KeyHit(KEY_ENTER)
+					m_score = 0
 					Local l_position:Vec2Di	= new Vec2Di(DeviceWidth - 45, 20)
 					Local l_size:Vec2Di		= new Vec2Di(80, 20)
 					m_gameState = STATE_GAME
 					m_startTime = Millisecs
-					m_progressBar = New ProgressBar("Progression: ", (Millisecs - m_startTime), GAME_ROUND_TIME , l_position, l_size, [10.0,10.0,10.0], [150.0,150.0,105.0])
+					m_progressBar = New ProgressBar("Progression: ", (Millisecs - m_startTime), GAME_ROUND_TIME * m_gameLvl, l_position, l_size, [10.0,10.0,10.0], [150.0,150.0,105.0])
 					CreateNewBullet( m_step, true )
 				End
 			Case STATE_GAME
@@ -242,7 +245,7 @@ Class konApp Extends App
 
 				'Let's see now if the player is colliding against a bullet. If so, that's the end
 				If IsPlayerColliding()
-					m_score = l_Progression
+					m_score = m_score + l_Progression
 					PlaySound( m_konamiSound )
 					i = 0
 					m_gameState = STATE_DEATH
@@ -250,11 +253,15 @@ Class konApp Extends App
 						'm_bullets[i] =  @TODO: détruire les balles présentes
 						i += 1
 					Wend
-					m_step = 1
+					m_step 		= 1
+					m_gameLvl 	= 1
 				End
 
 				If(m_progressBar.IsCompleted())
 					m_gameState = STATE_LVLUP
+					m_score = m_score + l_Progression
+					m_stopTime = Millisecs
+					m_gameLvl += 1
 				End
 
 			Case STATE_DEATH
@@ -264,10 +271,10 @@ Class konApp Extends App
 
 			Case STATE_LVLUP
 				If KeyHit(KEY_ENTER)
-					m_startTime = Millisecs
-					m_progressBar = New ProgressBar("Progression: ", (Millisecs - m_startTime), GAME_ROUND_TIME , new Vec2Di(DeviceWidth - 45, 20), new Vec2Di(80, 20), [10.0,10.0,10.0], [150.0,150.0,105.0])
+					'we start over were we stopped
+					m_startTime = m_startTime + Millisecs - m_stopTime
+					m_progressBar = New ProgressBar("Progression: ", (Millisecs - m_startTime), GAME_ROUND_TIME * m_gameLvl , new Vec2Di(DeviceWidth - 45, 20), new Vec2Di(80, 20), [10.0,10.0,10.0], [150.0,150.0,105.0])
 					m_gameState = STATE_GAME
-					CreateNewBullet( m_step, true )
 				End
 		End
 	End
@@ -294,7 +301,7 @@ Class konApp Extends App
 			Case STATE_DEATH
 				DrawText ("Game Over", DeviceWidth / 2, DeviceHeight / 2, 0.5, 1)
 				DrawText ("Score : " + m_score, DeviceWidth / 2, DeviceHeight / 2, 0.5, 0)
-				
+
 			Case STATE_LVLUP
 				DrawText ("Lvl up !", DeviceWidth / 2, DeviceHeight / 2, 0.5, 1)
 				DrawText ("Score : " + m_score, DeviceWidth / 2, DeviceHeight / 2, 0.5, 0)
