@@ -9,6 +9,9 @@ Class konApp Extends App
 	Const STATE_MENU:Int 	= 0
 	Const STATE_GAME:Int 	= 1
 	Const STATE_DEATH:Int	= 2
+	Const STATE_LVLUP:Int	= 3
+
+	Const GAME_ROUND_TIME:Int	= 10000
 
 	Const MAX_BULLETS		= 15
 
@@ -126,12 +129,18 @@ Class konApp Extends App
 
 	'@desc Method used to create new bullets. _first parameter should only be used if it's the first bullet ever generated in the game (to generate it on the ground)
 	Method CreateNewBullet( _speed:Int, _first:bool = false )
+		'Let's flush the seed
+		Rnd()
+		Rnd()
+		Rnd()
+		'Ok, Seed is OK
 		Local l_RndLeftRight:float	= Rnd()
-		Local l_RndHeight:float		= Rnd(240)
+		Local l_RndHeight:float		= Rnd(200)
 		Local l_xStartPosition:Int	= 0
 		Local l_yStartPosition:Int	= 0
 		Local l_velocity:Int		= 0
 		Local l_speed: Int			= _speed
+		Print "" + l_RndLeftRight
 
 		'If it's the first bullet we're generating, we force it to be on the ground
 		If _first
@@ -143,7 +152,7 @@ Class konApp Extends App
 		'If the bullet appears the others side of the screen, we reverse the speed (so it can go backwards)
 		If l_RndLeftRight > 0.5
 			l_xStartPosition = DeviceWidth() - 1
-			l_speed = -l_speed
+			l_velocity = -l_velocity
 		End
 
 		l_yStartPosition 	= 480 - l_RndHeight
@@ -207,11 +216,11 @@ Class konApp Extends App
 		Select m_gameState
 			Case STATE_MENU
 				If KeyHit(KEY_ENTER)
-					Local l_position:Vec2Di	= new Vec2Di(300, 20)
+					Local l_position:Vec2Di	= new Vec2Di(DeviceWidth - 45, 20)
 					Local l_size:Vec2Di		= new Vec2Di(80, 20)
 					m_gameState = STATE_GAME
 					m_startTime = Millisecs
-					m_progressBar = New ProgressBar("Progression: ", (Millisecs - m_startTime), 40000 , l_position, l_size, [10.0,10.0,10.0], [150.0,150.0,105.0])
+					m_progressBar = New ProgressBar("Progression: ", (Millisecs - m_startTime), GAME_ROUND_TIME , l_position, l_size, [10.0,10.0,10.0], [150.0,150.0,105.0])
 					CreateNewBullet( m_step, true )
 				End
 			Case STATE_GAME
@@ -236,7 +245,7 @@ Class konApp Extends App
 					m_score = l_Progression
 					PlaySound( m_konamiSound )
 					i = 0
-					m_gameState = 2
+					m_gameState = STATE_DEATH
 					While i < m_step
 						'm_bullets[i] =  @TODO: détruire les balles présentes
 						i += 1
@@ -244,9 +253,21 @@ Class konApp Extends App
 					m_step = 1
 				End
 
+				If(m_progressBar.IsCompleted())
+					m_gameState = STATE_LVLUP
+				End
+
 			Case STATE_DEATH
 				If KeyHit(KEY_ENTER)
 					m_gameState = STATE_MENU
+				End
+
+			Case STATE_LVLUP
+				If KeyHit(KEY_ENTER)
+					m_startTime = Millisecs
+					m_progressBar = New ProgressBar("Progression: ", (Millisecs - m_startTime), GAME_ROUND_TIME , new Vec2Di(DeviceWidth - 45, 20), new Vec2Di(80, 20), [10.0,10.0,10.0], [150.0,150.0,105.0])
+					m_gameState = STATE_GAME
+					CreateNewBullet( m_step, true )
 				End
 		End
 	End
@@ -269,9 +290,14 @@ Class konApp Extends App
 					m_bullets[i].Draw()
 					i += 1
 				Wend
+
 			Case STATE_DEATH
-				DrawText ("Game Over", (DeviceWidth -TextWidth("Game Over")) / 2, DeviceHeight / 2)
-				DrawText ("Score : " + m_score, (DeviceWidth - TextWidth("Score : " + m_score)) / 2, DeviceHeight / 2)
+				DrawText ("Game Over", DeviceWidth / 2, DeviceHeight / 2, 0.5, 1)
+				DrawText ("Score : " + m_score, DeviceWidth / 2, DeviceHeight / 2, 0.5, 0)
+				
+			Case STATE_LVLUP
+				DrawText ("Lvl up !", DeviceWidth / 2, DeviceHeight / 2, 0.5, 1)
+				DrawText ("Score : " + m_score, DeviceWidth / 2, DeviceHeight / 2, 0.5, 0)
 
 		End
 		'We display the konami, no matter the actual state

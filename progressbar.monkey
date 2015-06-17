@@ -26,7 +26,6 @@ Class ProgressBar
 
 	Method SetName( _name:String )
 		m_name = _name
-
 	End
 
 	Method SetPosition( _pos:Vec2Di )
@@ -40,7 +39,7 @@ Class ProgressBar
 	Method Draw()
 		m_background.Draw()
 		m_foreground.Draw()
-		DrawText( m_name, m_background.m_position.x - (TextWidth(m_name) + 5), m_background.m_position.y)
+		DrawText( m_name, m_background.m_position.x - (m_background.m_size.x / 2), m_background.m_position.y, 1, 0.5)
 	End
 
 	Method Update(_progression:Float)
@@ -49,6 +48,13 @@ Class ProgressBar
 		Local l_sizeX = m_background.m_size.x * l_Ratio
 		m_foreground.m_size.x = l_sizeX
 		m_foreground.m_position.x = m_background.m_position.x - (m_background.m_size.x / 2) + (l_sizeX/ 2 )
+	End
+
+	Method IsCompleted()
+		If( m_value / m_maxValue >= 1)
+			return true
+		End
+		return false
 	End
 
 End
