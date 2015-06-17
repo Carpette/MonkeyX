@@ -4,58 +4,58 @@ Import movingEntity
 
 Class Player Extends MovingEntity
 	
-	Field	m_speed:Float	= 4.0
-	Field	m_leftKey:Int
-	Field	m_rightKey:Int
-	Field	m_upKey:Int
+	Field	m_baseSpeed	:Float	= 4.0
+	Field	m_leftKey	:Int
+	Field	m_rightKey	:Int
+	Field	m_upKey		:Int
 
 	Method New(_leftKey:Int, _rightKey:Int, x:float, y:float)
-		self.m_originalPos 	= new Vec2D(x, y)
-		self.m_position 		= new Vec2D(x, y)
-		self.m_velocity		= new Vec2D(x, y)
+		m_originalPos 	= new Vec2D(x, y)
+		m_position 		= new Vec2D(x, y)
+		m_velocity		= new Vec2D(x, y)
 
-		Self.m_leftKey 	= _leftKey
-		Self.m_rightKey	= _rightKey
-		Self.m_upKey	= KEY_UP
-		Self.m_size		= 32
+		m_leftKey 	= _leftKey
+		m_rightKey	= _rightKey
+		m_upKey		= KEY_UP
+		m_size		= 32
 	End
 
 	Method Reset()
-		self.m_position.Set( self.m_originalPos.x, self.m_originalPos.y )
-		self.m_velocity.Set( 0, 0 )
+		m_position.Set( m_originalPos.x, m_originalPos.y )
+		m_velocity.Set( 0, 0 )
 	End
 
 	Method Update(_gravity:Float)
-		self.m_velocity.x = 0
-		self.m_velocity.y += _gravity
+		m_velocity.x = 0
+		m_velocity.y += _gravity
 
-		If KeyDown( self.m_leftKey )
-			self.m_velocity.x = -m_speed
+		If KeyDown( m_leftKey )
+			m_velocity.x = -m_baseSpeed
 		End
-		If KeyDown( self.m_rightKey )
-			self.m_velocity.x	= self.m_speed
+		If KeyDown( m_rightKey )
+			m_velocity.x	= m_baseSpeed
 		End
-		If KeyDown( self.m_upKey ) and self.m_position.y = 464.0
-			self.m_velocity.y	= -m_speed *2
+		If KeyDown( m_upKey ) and m_position.y = 464.0
+			m_velocity.y	= -m_baseSpeed *2
 		End
 
 		'We put the new position on x/y, then, we cap this position to the screen limit (with a left/right alternance only)
-		self.m_position.x += self.m_velocity.x
-		If self.m_position.x < ( self.m_size / 2 )
-			self.m_position.x = DeviceWidth - self.m_size / 2
+		m_position.x += m_velocity.x
+		If m_position.x < ( m_size / 2 )
+			m_position.x = m_size / 2
 		End
-		If self.m_position.x > ( DeviceWidth - self.m_size / 2 )
-			self.m_position.x = self.m_size / 2
+		If m_position.x > ( DeviceWidth - m_size / 2 )
+			m_position.x = DeviceWidth - m_size / 2
 		End
 
-		self.m_position.y += self.m_velocity.y
-		If self.m_position.y > ( DeviceHeight - self.m_size / 2 )
-			self.m_position.y = DeviceHeight - self.m_size / 2
+		m_position.y += m_velocity.y
+		If m_position.y > ( DeviceHeight - m_size / 2 )
+			m_position.y = DeviceHeight - m_size / 2
 		End
 	End
 
 	Method Draw()
 		SetColor(0, 255, 0)
-		DrawRect( self.m_position.x - self.m_size / 2, self.m_position.y - self.m_size / 2, self.m_size, self.m_size)
+		DrawRect( m_position.x - m_size / 2, m_position.y - m_size / 2, m_size, m_size)
 	End
 End

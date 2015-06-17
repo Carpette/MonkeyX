@@ -1,4 +1,5 @@
 import utils
+import mojo
 
 Class Menu
 	Field m_name:String
@@ -14,8 +15,8 @@ Class Menu
 
 	Method New( _name:String = "Menu", x:Int = 0, y:Int = 0, _width:Int = 200, _height:Int = 50 )
 		SetName( _name )
-		self.m_position 	= new Vec2Di( x, y )
-		self.m_size 		= new Vec2Di( _width, _height )
+		Self.m_position 	= new Vec2Di( x, y )
+		Self.m_size 		= new Vec2Di( _width, _height )
 	End
 
 	Method SetName( _name:String )
@@ -35,7 +36,10 @@ Class Menu
 	End
 
 	Method Draw()
-
+		SetColor(100, 50, 50)
+		DrawRect( Self.m_position.x - Self.m_size.x / 2, Self.m_position.y - Self.m_size.y / 2, Self.m_size.x, Self.m_size.y)
+''		SetColor( 0, 0, 0)
+		DrawText( Self.m_name, Self.m_position.x - TextWidth(Self.m_name), Self.m_position.y)
 	End
 
 End
