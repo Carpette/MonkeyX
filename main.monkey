@@ -2,12 +2,15 @@ import movingEntity
 Import player
 Import bullet
 Import menu
+Import progressBar
 
 Class konApp Extends App
 
 	Const STATE_MENU:Int 	= 0
 	Const STATE_GAME:Int 	= 1
 	Const STATE_DEATH:Int	= 2
+
+	Const MAX_BULLETS		= 15
 
 	Field	m_gameState		= 0
 	'Used to register the 10 first keyhit combo
@@ -24,6 +27,8 @@ Class konApp Extends App
 	Field	m_startTime:Int				= 0
 	'Well ... obviously, the game score
 	Field	m_score:Int					= 0
+	'Determining the actual game lvl (used to move on in the game)'
+	Field	m_gameLvl:Int				= 1
 
 	Field	m_gravity:float				= 0.2
 	'Shhhh, this is secret
@@ -32,8 +37,8 @@ Class konApp Extends App
 	Field	m_achievementUnlocked:Bool 	= false
 
 	Field	m_player:Player 			= New Player(KEY_LEFT, KEY_RIGHT, 320, 320)
-	Field	m_bullets:Bullet[10]
-	'Field	m_menu:Menu					= new Menu()
+	Field	m_bullets:Bullet[MAX_BULLETS]
+	Field	m_progressBar:ProgressBar
 	
 	'@desc Function used to draw waves on the background
 	'@author Q.Sixt (based on MonkeyX tutorials)
@@ -54,13 +59,13 @@ Class konApp Extends App
 		Local l_heightCenter:Int	= DeviceHeight / 2
 		Local l_delta:Int 			= Rnd (0, _clock) / 40
 
-		DrawImage self.m_konamiImage, l_delta, l_delta
+		DrawImage m_konamiImage, l_delta, l_delta
 	End
 	
 	'@Desc Used to display the Konami achievement on the screen just after it's been unlocked
 	'@author Q.Sixt
 	Method DisplayKonamiAchievement:void()
-		Self.m_achievementUnlocked = true
+		m_achievementUnlocked = true
 	End
 	
 	'@Desc Updating the keyHits and calling appropriates methods, depending the situation
@@ -71,27 +76,27 @@ Class konApp Extends App
 			If Not l_char
 				Exit
 			Endif
-			If Self.m_keyHitCount < 10
-				Self.m_keyHits[Self.m_keyHitCount] = l_char
+			If m_keyHitCount < 10
+				m_keyHits[m_keyHitCount] = l_char
 			Endif
-			Self.m_keyHitCount += 1
+			m_keyHitCount += 1
 			
 			'If 10 letters have been put in the array, we can check for Konami
-			If Self.m_keyHitCount = 10
-				If( Self.m_keyHits[0] = 65574 And
-					Self.m_keyHits[1] = 65574 And
-					Self.m_keyHits[2] = 65576 And
-					Self.m_keyHits[3] = 65576 And
-					Self.m_keyHits[4] = 65573 And
-					Self.m_keyHits[5] = 65575 And
-					Self.m_keyHits[6] = 65573 And
-					Self.m_keyHits[7] = 65575 And
-					Self.m_keyHits[8] = 98 And
-					Self.m_keyHits[9] = 97 )
+			If m_keyHitCount = 10
+				If( m_keyHits[0] = 65574 And
+					m_keyHits[1] = 65574 And
+					m_keyHits[2] = 65576 And
+					m_keyHits[3] = 65576 And
+					m_keyHits[4] = 65573 And
+					m_keyHits[5] = 65575 And
+					m_keyHits[6] = 65573 And
+					m_keyHits[7] = 65575 And
+					m_keyHits[8] = 98 And
+					m_keyHits[9] = 97 )
 			
 						DisplayKonamiAchievement()
 						m_konamiImage 	= LoadImage( "Achievement.png" )
-						PlaySound( self.m_konamiSound )
+						PlaySound( m_konamiSound )
 				Else
 		
 				Endif
@@ -102,8 +107,8 @@ Class konApp Extends App
 		Local l_upHit = KeyHit( KEY_UP )
 		If l_upHit
 			'We don't need to have more than 60 FPS on this demo
-			If( UpdateRate + Self.m_refreshStep < 65)
-				SetUpdateRate UpdateRate + Self.m_refreshStep
+			If( UpdateRate + m_refreshStep < 65)
+				SetUpdateRate UpdateRate + m_refreshStep
 			End
 		End
 		
@@ -111,12 +116,12 @@ Class konApp Extends App
 		Local l_downHit = KeyHit( KEY_DOWN )
 		If l_downHit
 			'Let's not slow down too much. Engine seems to crash if we reach 0
-			If( UpdateRate - Self.m_refreshStep > 0)
-				SetUpdateRate UpdateRate - Self.m_refreshStep
+			If( UpdateRate - m_refreshStep > 0)
+				SetUpdateRate UpdateRate - m_refreshStep
 			End
 		End
 		
-		Self.m_updateCount+=1
+		m_updateCount+=1
 	End
 
 	'@desc Method used to create new bullets. _first parameter should only be used if it's the first bullet ever generated in the game (to generate it on the ground)
@@ -130,8 +135,10 @@ Class konApp Extends App
 
 		'If it's the first bullet we're generating, we force it to be on the ground
 		If _first
-			l_RndHeight = 0 + self.m_player.GetSize()
+			l_RndHeight = 0 + m_player.GetSize()
 		End
+
+		l_velocity			= ((l_speed/2) + 1) * 2
 
 		'If the bullet appears the others side of the screen, we reverse the speed (so it can go backwards)
 		If l_RndLeftRight > 0.5
@@ -140,33 +147,31 @@ Class konApp Extends App
 		End
 
 		l_yStartPosition 	= 480 - l_RndHeight
-		l_velocity			=  l_speed * 2
 
-		Self.m_bullets[_speed - 1]	= New Bullet(KEY_LEFT, KEY_RIGHT, l_xStartPosition, l_yStartPosition, l_velocity)
+		m_bullets[_speed - 1]	= New Bullet(KEY_LEFT, KEY_RIGHT, l_xStartPosition, l_yStartPosition, l_velocity)
 	End
 
 	Method OnCreate()
 		SetUpdateRate 60
-		'Self.m_menu = New Menu("Test 1", TextWidth("Test 1"), 10, 2 * TextWidth("Test 1"), 30)
-		Self.m_step = 1
+		m_step = 1
 		m_konamiSound	= LoadSound( "Konami.wav")
 	End
 
 	'@desc return true if player is in a collision against any bullet
 	Method IsPlayerColliding:Bool()
 		local i:Int = 0
-		Local l_PlayerMinPosY	= Self.m_player.GetMinPosY()
-		Local l_PlayerMinPosX	= Self.m_player.GetMinPosX()
-		Local l_PlayerMaxPosY	= Self.m_player.GetMaxPosY()
-		Local l_PlayerMaxPosX	= Self.m_player.GetMaxPosX()
+		Local l_PlayerMinPosY	= m_player.GetMinPosY()
+		Local l_PlayerMinPosX	= m_player.GetMinPosX()
+		Local l_PlayerMaxPosY	= m_player.GetMaxPosY()
+		Local l_PlayerMaxPosX	= m_player.GetMaxPosX()
 
 		'For each bullet
-		While i < Self.m_step
+		While i < m_step
 
 			Local l_isCollidingOnX	= false
 			Local l_isCollidingOnY	= false
-			Local l_minPos = Self.m_bullets[i].GetMinPosX()
-			Local l_maxPos = Self.m_bullets[i].GetMaxPosX()
+			Local l_minPos = m_bullets[i].GetMinPosX()
+			Local l_maxPos = m_bullets[i].GetMaxPosX()
 			
 			'If the position of the Bullet is beetween the min and max of the player, then, collision
 			If ((l_PlayerMinPosX < l_maxPos and l_PlayerMinPosX > l_minPos) or
@@ -176,8 +181,8 @@ Class konApp Extends App
 				'Ok, if we're here, that means the X position is colliding. Let's check the Y position
 				l_isCollidingOnX = true
 			End
-			l_minPos = Self.m_bullets[i].GetMinPosY()
-			l_maxPos = Self.m_bullets[i].GetMaxPosY()
+			l_minPos = m_bullets[i].GetMinPosY()
+			l_maxPos = m_bullets[i].GetMaxPosY()
 
 			If ((l_PlayerMinPosY < l_maxPos and l_PlayerMinPosY > l_minPos) or
 				(l_PlayerMaxPosY < l_maxPos and l_PlayerMaxPosY > l_minPos) or
@@ -199,75 +204,79 @@ Class konApp Extends App
 	Method OnUpdate()
 		UpdateKeyHit()
 		
-		Select self.m_gameState
+		Select m_gameState
 			Case STATE_MENU
 				If KeyHit(KEY_ENTER)
-					self.m_gameState = STATE_GAME
-					Self.m_startTime = Millisecs
-					CreateNewBullet( Self.m_step, true )
+					Local l_position:Vec2Di	= new Vec2Di(300, 20)
+					Local l_size:Vec2Di		= new Vec2Di(80, 20)
+					m_gameState = STATE_GAME
+					m_startTime = Millisecs
+					m_progressBar = New ProgressBar("Progression: ", (Millisecs - m_startTime), 40000 , l_position, l_size, [10.0,10.0,10.0], [150.0,150.0,105.0])
+					CreateNewBullet( m_step, true )
 				End
-				'Self.m_menu.Update()
 			Case STATE_GAME
-				Self.m_player.Update( Self.m_gravity )
+				Local l_Progression:Float = Millisecs - m_startTime
+				m_progressBar.Update(l_Progression)
+				m_player.Update( m_gravity )
 
 				'we step-up every 8 seconds
-				If ((Millisecs - Self.m_startTime) / 1000) > self.m_step * 8 and m_step < 10
-					Self.m_step += 1
-					CreateNewBullet(Self.m_step)
+				If (l_Progression / 1000) > m_step * 8 and m_step < MAX_BULLETS
+					m_step += 1
+					CreateNewBullet(m_step)
 				End
 
 				local i:Int = 0
-				While i < Self.m_step
-					Self.m_bullets[i].Update(0.0)
+				While i < m_step
+					m_bullets[i].Update(0.0)
 					i += 1
 				Wend
 
 				'Let's see now if the player is colliding against a bullet. If so, that's the end
 				If IsPlayerColliding()
-					Self.m_score = Millisecs - Self.m_startTime
-					PlaySound( self.m_konamiSound )
+					m_score = l_Progression
+					PlaySound( m_konamiSound )
 					i = 0
-					self.m_gameState = 2
-					While i < Self.m_step
-						'Self.m_bullets[i] =  @TODO: détruire les balles présentes
+					m_gameState = 2
+					While i < m_step
+						'm_bullets[i] =  @TODO: détruire les balles présentes
 						i += 1
 					Wend
-					Self.m_step = 1
+					m_step = 1
 				End
 
 			Case STATE_DEATH
 				If KeyHit(KEY_ENTER)
-					self.m_gameState = STATE_MENU
+					m_gameState = STATE_MENU
 				End
 		End
 	End
 	
 	Method OnRender()
 		Cls
-		Select Self.m_gameState
+		Select m_gameState
 
 			Case STATE_MENU
-				DrawSpiral Self.m_updateCount
-				DrawSpiral Self.m_updateCount*1.1
-				'Self.m_menu.Draw()
+				DrawSpiral m_updateCount
+				DrawSpiral m_updateCount*1.1
 				DrawText ("Press enter to start", (DeviceWidth -100) / 2, DeviceHeight / 2)
 
 			Case STATE_GAME
-				Self.m_player.Draw()
+				m_progressBar.Draw()
+				m_player.Draw()
 				local i:Int = 0
-				While i < Self.m_step
+				While i < m_step
 
-					Self.m_bullets[i].Draw()
+					m_bullets[i].Draw()
 					i += 1
 				Wend
 			Case STATE_DEATH
 				DrawText ("Game Over", (DeviceWidth -TextWidth("Game Over")) / 2, DeviceHeight / 2)
-				DrawText ("Score : " + Self.m_score, (DeviceWidth - TextWidth("Score : " + Self.m_score)) / 2, DeviceHeight / 2)
+				DrawText ("Score : " + m_score, (DeviceWidth - TextWidth("Score : " + m_score)) / 2, DeviceHeight / 2)
 
 		End
 		'We display the konami, no matter the actual state
-		If( Self.m_achievementUnlocked )
-			DrawKonami( Self.m_updateCount )
+		If( m_achievementUnlocked )
+			DrawKonami( m_updateCount )
 		Endif
 	End
 	
